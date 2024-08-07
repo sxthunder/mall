@@ -9,6 +9,7 @@ import com.macro.mall.common.service.RedisService;
 import com.macro.mall.mapper.*;
 import com.macro.mall.model.*;
 import com.macro.mall.portal.component.CancelOrderSender;
+import com.macro.mall.portal.component.OrderCreationSender;
 import com.macro.mall.portal.dao.PortalOrderDao;
 import com.macro.mall.portal.dao.PortalOrderItemDao;
 import com.macro.mall.portal.dao.SmsCouponHistoryDao;
@@ -67,6 +68,8 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
     private OmsOrderItemMapper orderItemMapper;
     @Autowired
     private CancelOrderSender cancelOrderSender;
+    @Autowired
+    private OrderCreationSender orderCreationSender;
 
     @Override
     public ConfirmOrderResult generateConfirmOrder(List<Long> cartIds) {
@@ -94,13 +97,22 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
 
     @Override
     public Map<String, Object> generateOrder(OrderParam orderParam) {
+        UmsMember currentMember = memberService.getCurrentMember();
+        // Send a message to the order creation queue
+        orderCreationSender.sendMessage(orderParam, currentMember.getId());
+        Map<String, Object> result = new HashMap<>();
+        result.put("message", "Order creation request sent successfully");
+        return result;
+    }
+
+    public void handleOrderCreation(OrderParam orderParam, Long memberId) {
         List<OmsOrderItem> orderItemList = new ArrayList<>();
         //校验收货地址
         if(orderParam.getMemberReceiveAddressId()==null){
             Asserts.fail("请选择收货地址！");
         }
         //获取购物车及优惠信息
-        UmsMember currentMember = memberService.getCurrentMember();
+        UmsMember currentMember = memberService.getById(memberId);
         List<CartPromotionItem> cartPromotionItemList = cartItemService.listPromotion(currentMember.getId(), orderParam.getCartIds());
         for (CartPromotionItem cartPromotionItem : cartPromotionItemList) {
             //生成下单商品信息
@@ -245,10 +257,6 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         deleteCartItemList(cartPromotionItemList, currentMember);
         //发送延迟消息取消订单
         sendDelayMessageCancelOrder(order.getId());
-        Map<String, Object> result = new HashMap<>();
-        result.put("order", order);
-        result.put("orderItemList", orderItemList);
-        return result;
     }
 
     @Override
