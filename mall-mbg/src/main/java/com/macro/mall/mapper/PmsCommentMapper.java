@@ -33,4 +33,9 @@ public interface PmsCommentMapper {
     int updateByPrimaryKeyWithBLOBs(PmsComment record);
 
     int updateByPrimaryKey(PmsComment record);
+
+    // Additional methods for CRUD operations on product reviews
+    List<PmsComment> selectByProductId(Long productId);
+
+    int deleteByProductId(Long productId);
 }

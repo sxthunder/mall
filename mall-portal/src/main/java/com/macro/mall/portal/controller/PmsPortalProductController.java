@@ -3,9 +3,11 @@ package com.macro.mall.portal.controller;
 import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.model.PmsProduct;
+import com.macro.mall.model.PmsComment;
 import com.macro.mall.portal.domain.PmsPortalProductDetail;
 import com.macro.mall.portal.domain.PmsProductCategoryNode;
 import com.macro.mall.portal.service.PmsPortalProductService;
+import com.macro.mall.portal.service.PmsCommentService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -28,6 +30,9 @@ public class PmsPortalProductController {
 
     @Autowired
     private PmsPortalProductService portalProductService;
+
+    @Autowired
+    private PmsCommentService commentService;
 
     @ApiOperation(value = "综合搜索、筛选、排序")
     @ApiImplicitParam(name = "sort", value = "排序字段:0->按相关度；1->按新品；2->按销量；3->价格从低到高；4->价格从高到低",
@@ -58,5 +63,46 @@ public class PmsPortalProductController {
     public CommonResult<PmsPortalProductDetail> detail(@PathVariable Long id) {
         PmsPortalProductDetail productDetail = portalProductService.detail(id);
         return CommonResult.success(productDetail);
+    }
+
+    @ApiOperation("获取商品评价列表")
+    @RequestMapping(value = "/comments/{productId}", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult<List<PmsComment>> getComments(@PathVariable Long productId) {
+        List<PmsComment> comments = commentService.getCommentsByProductId(productId);
+        return CommonResult.success(comments);
+    }
+
+    @ApiOperation("添加商品评价")
+    @RequestMapping(value = "/comment", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult addComment(@RequestBody PmsComment comment) {
+        int count = commentService.addComment(comment);
+        if (count > 0) {
+            return CommonResult.success(count);
+        }
+        return CommonResult.failed();
+    }
+
+    @ApiOperation("删除商品评价")
+    @RequestMapping(value = "/comment/{id}", method = RequestMethod.DELETE)
+    @ResponseBody
+    public CommonResult deleteComment(@PathVariable Long id) {
+        int count = commentService.deleteComment(id);
+        if (count > 0) {
+            return CommonResult.success(count);
+        }
+        return CommonResult.failed();
+    }
+
+    @ApiOperation("更新商品评价")
+    @RequestMapping(value = "/comment", method = RequestMethod.PUT)
+    @ResponseBody
+    public CommonResult updateComment(@RequestBody PmsComment comment) {
+        int count = commentService.updateComment(comment);
+        if (count > 0) {
+            return CommonResult.success(count);
+        }
+        return CommonResult.failed();
     }
 }
