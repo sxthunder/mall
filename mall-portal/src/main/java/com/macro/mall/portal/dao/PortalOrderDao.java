@@ -51,4 +51,19 @@ public interface PortalOrderDao {
      * 根据商品的skuId释放库存
      */
     int releaseStockBySkuId(@Param("productSkuId")Long productSkuId,@Param("quantity") Integer quantity);
+
+    /**
+     * 回退库存
+     */
+    int rollbackStock(@Param("productSkuId") Long productSkuId, @Param("quantity") Integer quantity);
+
+    /**
+     * 返还优惠券
+     */
+    int returnCoupon(@Param("couponId") Long couponId, @Param("memberId") Long memberId);
+
+    /**
+     * 调整用户积分
+     */
+    int adjustUserPoints(@Param("memberId") Long memberId, @Param("points") Integer points);
 }
