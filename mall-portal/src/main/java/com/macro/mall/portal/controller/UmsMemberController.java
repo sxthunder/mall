@@ -105,4 +105,12 @@ public class UmsMemberController {
         tokenMap.put("tokenHead", tokenHead);
         return CommonResult.success(tokenMap);
     }
+
+    @ApiOperation("检查用户是否已登录")
+    @RequestMapping(value = "/isUserLoggedIn", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult<Boolean> isUserLoggedIn() {
+        boolean isLoggedIn = memberService.getCurrentMember() != null;
+        return CommonResult.success(isLoggedIn);
+    }
 }

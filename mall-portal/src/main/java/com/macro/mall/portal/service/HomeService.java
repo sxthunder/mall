@@ -44,4 +44,9 @@ public interface HomeService {
      * 分页获取新品推荐商品
      */
     List<PmsProduct> newProductList(Integer pageNum, Integer pageSize);
+
+    /**
+     * 检查用户是否已登录
+     */
+    boolean isUserLoggedIn();
 }
