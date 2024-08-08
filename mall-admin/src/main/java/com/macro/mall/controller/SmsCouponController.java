@@ -5,6 +5,7 @@ import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.dto.SmsCouponParam;
 import com.macro.mall.model.SmsCoupon;
 import com.macro.mall.service.SmsCouponService;
+import com.macro.mall.common.service.RedisService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,6 +26,9 @@ import java.util.List;
 public class SmsCouponController {
     @Autowired
     private SmsCouponService couponService;
+    @Autowired
+    private RedisService redisService;
+
     @ApiOperation("添加优惠券")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @ResponseBody
@@ -66,7 +70,14 @@ public class SmsCouponController {
             @RequestParam(value = "type",required = false) Integer type,
             @RequestParam(value = "pageSize", defaultValue = "5") Integer pageSize,
             @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum) {
-        List<SmsCoupon> couponList = couponService.list(name,type,pageSize,pageNum);
+        String cacheKey = "couponList:" + name + ":" + type + ":" + pageSize + ":" + pageNum;
+        List<SmsCoupon> couponList = (List<SmsCoupon>) redisService.get(cacheKey);
+        if (couponList != null) {
+            return CommonResult.success(CommonPage.restPage(couponList));
+        }
+
+        couponList = couponService.list(name, type, pageSize, pageNum);
+        redisService.set(cacheKey, couponList);
         return CommonResult.success(CommonPage.restPage(couponList));
     }
 
