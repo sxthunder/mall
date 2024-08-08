@@ -12,8 +12,12 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -24,6 +28,7 @@ import java.util.List;
 @Api(tags = "PmsProductController")
 @Tag(name = "PmsProductController", description = "商品管理")
 @RequestMapping("/product")
+@Validated
 public class PmsProductController {
     @Autowired
     private PmsProductService productService;
@@ -63,9 +68,10 @@ public class PmsProductController {
     @ApiOperation("查询商品")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     @ResponseBody
-    public CommonResult<CommonPage<PmsProduct>> getList(PmsProductQueryParam productQueryParam,
-                                                        @RequestParam(value = "pageSize", defaultValue = "5") Integer pageSize,
-                                                        @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum) {
+    public CommonResult<CommonPage<PmsProduct>> getList(
+            @Validated PmsProductQueryParam productQueryParam,
+            @RequestParam(value = "pageSize", defaultValue = "5") @Min(1) @Max(100) Integer pageSize,
+            @RequestParam(value = "pageNum", defaultValue = "1") @Min(1) Integer pageNum) {
         List<PmsProduct> productList = productService.list(productQueryParam, pageSize, pageNum);
         return CommonResult.success(CommonPage.restPage(productList));
     }
@@ -73,7 +79,7 @@ public class PmsProductController {
     @ApiOperation("根据商品名称或货号模糊查询")
     @RequestMapping(value = "/simpleList", method = RequestMethod.GET)
     @ResponseBody
-    public CommonResult<List<PmsProduct>> getList(String keyword) {
+    public CommonResult<List<PmsProduct>> getList(@RequestParam @Size(max = 100) String keyword) {
         List<PmsProduct> productList = productService.list(keyword);
         return CommonResult.success(productList);
     }
