@@ -111,4 +111,26 @@ public class OmsOrderController {
         }
         return CommonResult.failed();
     }
+
+    @ApiOperation("创建订单")
+    @RequestMapping(value = "/create", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult createOrder(@RequestBody OmsOrder order) {
+        int count = orderService.createOrder(order);
+        if (count > 0) {
+            return CommonResult.success(count);
+        }
+        return CommonResult.failed();
+    }
+
+    @ApiOperation("支付订单")
+    @RequestMapping(value = "/pay", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult payOrder(@RequestParam("orderId") Long orderId) {
+        int count = orderService.payOrder(orderId);
+        if (count > 0) {
+            return CommonResult.success(count);
+        }
+        return CommonResult.failed();
+    }
 }
