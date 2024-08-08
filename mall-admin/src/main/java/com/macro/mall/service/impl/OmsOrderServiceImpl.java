@@ -12,6 +12,8 @@ import com.macro.mall.model.OmsOrderOperateHistory;
 import com.macro.mall.service.OmsOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.List;
@@ -31,6 +33,8 @@ public class OmsOrderServiceImpl implements OmsOrderService {
     private OmsOrderOperateHistoryDao orderOperateHistoryDao;
     @Autowired
     private OmsOrderOperateHistoryMapper orderOperateHistoryMapper;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OmsOrderServiceImpl.class);
 
     @Override
     public List<OmsOrder> list(OmsOrderQueryParam queryParam, Integer pageSize, Integer pageNum) {
@@ -54,6 +58,7 @@ public class OmsOrderServiceImpl implements OmsOrderService {
                     return history;
                 }).collect(Collectors.toList());
         orderOperateHistoryDao.insertList(operateHistoryList);
+        LOGGER.info("Orders delivered: {}", deliveryParamList);
         return count;
     }
 
@@ -74,6 +79,7 @@ public class OmsOrderServiceImpl implements OmsOrderService {
             return history;
         }).collect(Collectors.toList());
         orderOperateHistoryDao.insertList(historyList);
+        LOGGER.info("Orders closed: {}, note: {}", ids, note);
         return count;
     }
 
@@ -83,12 +89,16 @@ public class OmsOrderServiceImpl implements OmsOrderService {
         record.setDeleteStatus(1);
         OmsOrderExample example = new OmsOrderExample();
         example.createCriteria().andDeleteStatusEqualTo(0).andIdIn(ids);
-        return orderMapper.updateByExampleSelective(record, example);
+        int count = orderMapper.updateByExampleSelective(record, example);
+        LOGGER.info("Orders deleted: {}", ids);
+        return count;
     }
 
     @Override
     public OmsOrderDetail detail(Long id) {
-        return orderDao.getDetail(id);
+        OmsOrderDetail orderDetail = orderDao.getDetail(id);
+        LOGGER.info("Order detail retrieved: {}", orderDetail);
+        return orderDetail;
     }
 
     @Override
@@ -112,6 +122,7 @@ public class OmsOrderServiceImpl implements OmsOrderService {
         history.setOrderStatus(receiverInfoParam.getStatus());
         history.setNote("修改收货人信息");
         orderOperateHistoryMapper.insert(history);
+        LOGGER.info("Receiver info updated: {}", receiverInfoParam);
         return count;
     }
 
@@ -131,6 +142,7 @@ public class OmsOrderServiceImpl implements OmsOrderService {
         history.setOrderStatus(moneyInfoParam.getStatus());
         history.setNote("修改费用信息");
         orderOperateHistoryMapper.insert(history);
+        LOGGER.info("Money info updated: {}", moneyInfoParam);
         return count;
     }
 
@@ -148,6 +160,45 @@ public class OmsOrderServiceImpl implements OmsOrderService {
         history.setOrderStatus(status);
         history.setNote("修改备注信息："+note);
         orderOperateHistoryMapper.insert(history);
+        LOGGER.info("Order note updated: id={}, note={}, status={}", id, note, status);
+        return count;
+    }
+
+    @Override
+    public int createOrder(OmsOrder order) {
+        order.setCreateTime(new Date());
+        int count = orderMapper.insert(order);
+        //插入操作记录
+        OmsOrderOperateHistory history = new OmsOrderOperateHistory();
+        history.setOrderId(order.getId());
+        history.setCreateTime(new Date());
+        history.setOperateMan("后台管理员");
+        history.setOrderStatus(order.getStatus());
+        history.setNote("创建订单");
+        orderOperateHistoryMapper.insert(history);
+        LOGGER.info("Order created: {}", order);
+        return count;
+    }
+
+    @Override
+    public int payOrder(Long orderId) {
+        OmsOrder order = orderMapper.selectByPrimaryKey(orderId);
+        if (order == null) {
+            LOGGER.error("Order not found: {}", orderId);
+            return 0;
+        }
+        order.setStatus(1); // Assuming 1 is the status for paid orders
+        order.setPaymentTime(new Date());
+        int count = orderMapper.updateByPrimaryKey(order);
+        //插入操作记录
+        OmsOrderOperateHistory history = new OmsOrderOperateHistory();
+        history.setOrderId(orderId);
+        history.setCreateTime(new Date());
+        history.setOperateMan("后台管理员");
+        history.setOrderStatus(order.getStatus());
+        history.setNote("订单支付");
+        orderOperateHistoryMapper.insert(history);
+        LOGGER.info("Order paid: {}", order);
         return count;
     }
 }
