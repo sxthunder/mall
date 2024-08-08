@@ -58,4 +58,3 @@ rabbitmq:
   queue:
     name:
       cancelOrder: cancelOrderQueue
-
