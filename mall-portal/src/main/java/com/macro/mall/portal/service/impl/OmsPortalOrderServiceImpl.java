@@ -344,6 +344,10 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
                 UmsMember member = memberService.getById(cancelOrder.getMemberId());
                 memberService.updateIntegration(cancelOrder.getMemberId(), member.getIntegration() + cancelOrder.getUseIntegration());
             }
+            // Retrieve user information
+            UmsMember member = memberService.getById(cancelOrder.getMemberId());
+            // Send message with order ID and user information
+            cancelOrderSender.sendMessage(orderId, member, 0);
         }
     }
 
@@ -353,7 +357,8 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         OmsOrderSetting orderSetting = orderSettingMapper.selectByPrimaryKey(1L);
         long delayTimes = orderSetting.getNormalOrderOvertime() * 60 * 1000;
         //发送延迟消息
-        cancelOrderSender.sendMessage(orderId, delayTimes);
+        UmsMember member = memberService.getCurrentMember();
+        cancelOrderSender.sendMessage(orderId, member, delayTimes);
     }
 
     @Override
