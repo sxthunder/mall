@@ -28,4 +28,7 @@
             #{item.spData,jdbcType=VARCHAR})
         </foreach>
     </insert>
+    <select id="getStockByProductId" resultType="java.lang.Integer">
+        SELECT stock FROM pms_sku_stock WHERE product_id = #{productId}
+    </select>
 </mapper>

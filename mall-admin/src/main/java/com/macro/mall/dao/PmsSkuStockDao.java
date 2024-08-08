@@ -19,4 +19,9 @@ public interface PmsSkuStockDao {
      * 批量插入或替换操作
      */
     int replaceList(@Param("list")List<PmsSkuStock> skuStockList);
+
+    /**
+     * 获取指定商品的库存
+     */
+    Integer getStockByProductId(@Param("productId") Long productId);
 }

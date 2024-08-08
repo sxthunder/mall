@@ -125,6 +125,9 @@ public class PmsPortalProductServiceImpl implements PmsPortalProductService {
         }
         //商品可用优惠券
         result.setCouponList(portalProductDao.getAvailableCouponList(product.getId(),product.getProductCategoryId()));
+        //获取商品库存
+        Integer stock = skuStockMapper.getStockByProductId(product.getId());
+        result.setStock(stock);
         return result;
     }
 
