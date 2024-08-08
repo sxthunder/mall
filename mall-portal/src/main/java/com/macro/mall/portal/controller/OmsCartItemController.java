@@ -33,6 +33,19 @@ public class OmsCartItemController {
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     @ResponseBody
     public CommonResult add(@RequestBody OmsCartItem cartItem) {
+        if (cartItem.getQuantity() == null || cartItem.getQuantity() <= 0) {
+            throw new RuntimeException("购买数量不能为空或小于等于0");
+        }
+        if (cartItem.getProductName() == null || cartItem.getProductName().isEmpty()) {
+            throw new RuntimeException("商品名称不能为空");
+        }
+        if (cartItem.getProductSkuCode() == null || cartItem.getProductSkuCode().isEmpty()) {
+            throw new RuntimeException("商品sku条码不能为空");
+        }
+        if (cartItem.getMemberNickname() == null || cartItem.getMemberNickname().isEmpty()) {
+            throw new RuntimeException("会员昵称不能为空");
+        }
+
         int count = cartItemService.add(cartItem);
         if (count > 0) {
             return CommonResult.success(count);
