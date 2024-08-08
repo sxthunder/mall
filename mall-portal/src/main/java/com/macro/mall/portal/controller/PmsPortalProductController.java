@@ -14,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -34,11 +37,11 @@ public class PmsPortalProductController {
             defaultValue = "0", allowableValues = "0,1,2,3,4", paramType = "query", dataType = "integer")
     @RequestMapping(value = "/search", method = RequestMethod.GET)
     @ResponseBody
-    public CommonResult<CommonPage<PmsProduct>> search(@RequestParam(required = false) String keyword,
+    public CommonResult<CommonPage<PmsProduct>> search(@RequestParam(required = false) @Size(max = 100) String keyword,
                                                        @RequestParam(required = false) Long brandId,
                                                        @RequestParam(required = false) Long productCategoryId,
-                                                       @RequestParam(required = false, defaultValue = "0") Integer pageNum,
-                                                       @RequestParam(required = false, defaultValue = "5") Integer pageSize,
+                                                       @RequestParam(required = false, defaultValue = "0") @Min(0) Integer pageNum,
+                                                       @RequestParam(required = false, defaultValue = "5") @Min(1) @Max(100) Integer pageSize,
                                                        @RequestParam(required = false, defaultValue = "0") Integer sort) {
         List<PmsProduct> productList = portalProductService.search(keyword, brandId, productCategoryId, pageNum, pageSize, sort);
         return CommonResult.success(CommonPage.restPage(productList));
