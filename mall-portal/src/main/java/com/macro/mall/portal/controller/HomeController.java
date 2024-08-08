@@ -4,8 +4,10 @@ import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.model.CmsSubject;
 import com.macro.mall.model.PmsProduct;
 import com.macro.mall.model.PmsProductCategory;
+import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.domain.HomeContentResult;
 import com.macro.mall.portal.service.HomeService;
+import com.macro.mall.portal.service.UmsMemberService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,6 +29,9 @@ public class HomeController {
     @Autowired
     private HomeService homeService;
 
+    @Autowired
+    private UmsMemberService umsMemberService;
+
     @ApiOperation("首页内容信息展示")
     @RequestMapping(value = "/content", method = RequestMethod.GET)
     @ResponseBody
@@ -40,6 +45,10 @@ public class HomeController {
     @ResponseBody
     public CommonResult<List<PmsProduct>> recommendProductList(@RequestParam(value = "pageSize", defaultValue = "4") Integer pageSize,
                                                                @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum) {
+        UmsMember currentMember = umsMemberService.getCurrentMember();
+        if (currentMember == null) {
+            return CommonResult.unauthorized(null);
+        }
         List<PmsProduct> productList = homeService.recommendProductList(pageSize, pageNum);
         return CommonResult.success(productList);
     }
