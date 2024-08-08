@@ -12,6 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * 会员商品收藏管理Controller
  * Created by macro on 2018/8/2.
@@ -41,6 +43,21 @@ public class MemberProductCollectionController {
     @ResponseBody
     public CommonResult delete(Long productId) {
         int count = memberCollectionService.delete(productId);
+        if (count > 0) {
+            return CommonResult.success(count);
+        } else {
+            return CommonResult.failed();
+        }
+    }
+
+    @ApiOperation("批量删除商品收藏")
+    @RequestMapping(value = "/deleteBatch", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult deleteBatch(@RequestBody List<Long> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return CommonResult.failed("商品ID列表不能为空");
+        }
+        int count = memberCollectionService.deleteBatch(productIds);
         if (count > 0) {
             return CommonResult.success(count);
         } else {
