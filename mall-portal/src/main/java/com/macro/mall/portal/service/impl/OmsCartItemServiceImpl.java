@@ -37,6 +37,7 @@ public class OmsCartItemServiceImpl implements OmsCartItemService {
 
     @Override
     public int add(OmsCartItem cartItem) {
+        validateCartItem(cartItem);
         int count;
         UmsMember currentMember =memberService.getCurrentMember();
         cartItem.setMemberId(currentMember.getId());
@@ -135,5 +136,25 @@ public class OmsCartItemServiceImpl implements OmsCartItemService {
         OmsCartItemExample example = new OmsCartItemExample();
         example.createCriteria().andMemberIdEqualTo(memberId);
         return cartItemMapper.updateByExampleSelective(record,example);
+    }
+
+    @Override
+    public void validateCartItem(OmsCartItem cartItem) {
+        StringBuilder errorMessage = new StringBuilder();
+        if (cartItem.getQuantity() == null) {
+            errorMessage.append("购买数量不能为空; ");
+        }
+        if (cartItem.getProductName() == null || cartItem.getProductName().isEmpty()) {
+            errorMessage.append("商品名称不能为空; ");
+        }
+        if (cartItem.getProductSkuCode() == null || cartItem.getProductSkuCode().isEmpty()) {
+            errorMessage.append("商品sku条码不能为空; ");
+        }
+        if (cartItem.getMemberNickname() == null || cartItem.getMemberNickname().isEmpty()) {
+            errorMessage.append("会员昵称不能为空; ");
+        }
+        if (errorMessage.length() > 0) {
+            throw new RuntimeException(errorMessage.toString());
+        }
     }
 }
