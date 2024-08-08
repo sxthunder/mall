@@ -33,3 +33,8 @@ logging:
 logstash:
   host: localhost
   enableInnerLog: false
+
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher

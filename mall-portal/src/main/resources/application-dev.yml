@@ -32,6 +32,9 @@ spring:
     virtual-host: /mall
     username: mall
     password: mall
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
 
 logging:
   level:
