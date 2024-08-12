@@ -100,6 +100,13 @@ public class HomeServiceImpl implements HomeService {
         return homeDao.getNewProductList(offset, pageSize);
     }
 
+    @Override
+    public boolean isUserLoggedIn() {
+        // Implement the method to check if the user is logged in
+        // This is a placeholder implementation, replace it with actual logic
+        return false;
+    }
+
     private HomeFlashPromotion getHomeFlashPromotion() {
         HomeFlashPromotion homeFlashPromotion = new HomeFlashPromotion();
         //获取当前秒杀活动
