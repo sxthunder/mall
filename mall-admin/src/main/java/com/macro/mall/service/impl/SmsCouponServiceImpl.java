@@ -11,6 +11,7 @@ import com.macro.mall.mapper.SmsCouponProductCategoryRelationMapper;
 import com.macro.mall.mapper.SmsCouponProductRelationMapper;
 import com.macro.mall.model.*;
 import com.macro.mall.service.SmsCouponService;
+import com.macro.mall.common.service.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +35,9 @@ public class SmsCouponServiceImpl implements SmsCouponService {
     private SmsCouponProductCategoryRelationDao productCategoryRelationDao;
     @Autowired
     private SmsCouponDao couponDao;
+    @Autowired
+    private RedisService redisService;
+
     @Override
     public int create(SmsCouponParam couponParam) {
         couponParam.setCount(couponParam.getPublishCount());
@@ -106,6 +110,12 @@ public class SmsCouponServiceImpl implements SmsCouponService {
 
     @Override
     public List<SmsCoupon> list(String name, Integer type, Integer pageSize, Integer pageNum) {
+        String cacheKey = "couponList:" + name + ":" + type + ":" + pageSize + ":" + pageNum;
+        List<SmsCoupon> couponList = (List<SmsCoupon>) redisService.get(cacheKey);
+        if (couponList != null) {
+            return couponList;
+        }
+
         SmsCouponExample example = new SmsCouponExample();
         SmsCouponExample.Criteria criteria = example.createCriteria();
         if(!StrUtil.isEmpty(name)){
@@ -115,7 +125,9 @@ public class SmsCouponServiceImpl implements SmsCouponService {
             criteria.andTypeEqualTo(type);
         }
         PageHelper.startPage(pageNum,pageSize);
-        return couponMapper.selectByExample(example);
+        couponList = couponMapper.selectByExample(example);
+        redisService.set(cacheKey, couponList);
+        return couponList;
     }
 
     @Override
