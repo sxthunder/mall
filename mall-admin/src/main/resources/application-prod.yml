@@ -30,7 +30,8 @@ logging:
     path: /var/logs
   level:
     root: info
-    com.macro.mall: info
+    com.macro.mall: debug
+    com.macro.mall.service.impl.OmsOrderServiceImpl: debug
 
 logstash:
   host: logstash

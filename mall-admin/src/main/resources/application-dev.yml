@@ -29,6 +29,7 @@ logging:
   level:
     root: info
     com.macro.mall: debug
+    com.macro.mall.service.impl.OmsOrderServiceImpl: debug
 
 logstash:
   host: localhost
