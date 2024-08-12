@@ -14,6 +14,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * 会员收藏Service实现类
  * Created by macro on 2018/8/2.
@@ -61,6 +63,12 @@ public class MemberCollectionServiceImpl implements MemberCollectionService {
     public int delete(Long productId) {
         UmsMember member = memberService.getCurrentMember();
         return productCollectionRepository.deleteByMemberIdAndProductId(member.getId(), productId);
+    }
+
+    @Override
+    public int deleteBatch(List<Long> productIds) {
+        UmsMember member = memberService.getCurrentMember();
+        return productCollectionRepository.deleteByMemberIdAndProductIdIn(member.getId(), productIds);
     }
 
     @Override
