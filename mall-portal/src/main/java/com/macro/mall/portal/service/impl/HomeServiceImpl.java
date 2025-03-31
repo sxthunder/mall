@@ -1,6 +1,7 @@
 package com.macro.mall.portal.service.impl;
 
 import com.github.pagehelper.PageHelper;
+import com.macro.mall.common.service.RedisService;
 import com.macro.mall.mapper.*;
 import com.macro.mall.model.*;
 import com.macro.mall.portal.dao.HomeDao;
@@ -10,11 +11,13 @@ import com.macro.mall.portal.domain.HomeFlashPromotion;
 import com.macro.mall.portal.service.HomeService;
 import com.macro.mall.portal.util.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 首页内容管理Service实现类
@@ -36,6 +39,14 @@ public class HomeServiceImpl implements HomeService {
     private PmsProductCategoryMapper productCategoryMapper;
     @Autowired
     private CmsSubjectMapper subjectMapper;
+    @Autowired
+    private RedisService redisService;
+    @Value("${redis.database}")
+    private String REDIS_DATABASE;
+    @Value("${redis.expire.common}")
+    private Long REDIS_EXPIRE;
+    @Value("${redis.key.hotProductList}")
+    private String REDIS_KEY_HOT_PRODUCT_LIST;
 
     @Override
     public HomeContentResult content() {
@@ -90,8 +101,14 @@ public class HomeServiceImpl implements HomeService {
 
     @Override
     public List<PmsProduct> hotProductList(Integer pageNum, Integer pageSize) {
-        int offset = pageSize * (pageNum - 1);
-        return homeDao.getHotProductList(offset, pageSize);
+        String key = REDIS_DATABASE + ":" + REDIS_KEY_HOT_PRODUCT_LIST + ":" + pageNum + ":" + pageSize;
+        List<PmsProduct> productList = (List<PmsProduct>) redisService.get(key);
+        if (CollectionUtils.isEmpty(productList)) {
+            int offset = pageSize * (pageNum - 1);
+            productList = homeDao.getHotProductList(offset, pageSize);
+            redisService.set(key, productList, REDIS_EXPIRE, TimeUnit.SECONDS);
+        }
+        return productList;
     }
 
     @Override
